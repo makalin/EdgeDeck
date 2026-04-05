@@ -92,20 +92,42 @@ Use it to:
 ### Backend
 
 * PHP API (minimal, no heavy frameworks)
-* MySQL or lightweight DB (Velo-Lite compatible)
-* Admin dashboard (optional)
+* File-backed storage for the MVP (`backend/storage/`); DB-ready later
+* Admin dashboard at `/admin/`
+* Optional API key (`EDGEDECK_API_KEY`) and CORS (`EDGEDECK_CORS_ORIGIN`)
 
 ---
 
-## 📡 API (Example)
+## 📡 API
 
 ```
-POST /api/sync
-GET  /api/jobs
-POST /api/note
-POST /api/telemetry
-GET  /api/config
+GET   /api/health          # liveness (public even when API key is set)
+GET   /api/config          # feature flags & limits (key redacted)
+GET   /api/jobs
+PATCH /api/job             # body: id, status; optional result
+GET   /api/notes?limit=
+POST  /api/note
+GET   /api/telemetry?limit=
+POST  /api/telemetry
+POST  /api/scan            # WiFi/BLE snapshots (kind: wifi | ble | both)
+GET   /api/scans?limit=
+POST  /api/sync
+GET   /api/sync/history?limit=
 ```
+
+See `backend/README.md` for security notes and smoke tests.
+
+---
+
+## 🏃 Quick start (backend)
+
+From the repo root:
+
+```sh
+make serve
+```
+
+Open `http://127.0.0.1:8080/admin/` or `http://127.0.0.1:8080/api/health`. With the server running, `make api-smoke` runs basic `curl` checks.
 
 ---
 
@@ -113,7 +135,9 @@ GET  /api/config
 
 ```
 edgedeck/
+  Makefile
   firmware/
+    platformio.ini
     src/
     lib/
     data/
@@ -121,6 +145,8 @@ edgedeck/
     api/
     admin/
     config/
+    scripts/
+    storage/
   docs/
   hardware/
   README.md
@@ -130,11 +156,12 @@ edgedeck/
 
 ## ⚡ MVP Scope
 
-* Menu system
-* WiFi scanning
+* Firmware skeleton: macros, simulated scans, JSON-shaped sync queue
+* WiFi scanning (real hardware integration pending)
 * Note creation + storage
-* JSON sync queue
-* Basic PHP API endpoint
+* JSON sync queue and batch POST to `/api/sync`
+* PHP API: health, config, jobs, notes, telemetry, scans, sync history
+* Admin status page and `api-smoke` script
 
 ---
 
